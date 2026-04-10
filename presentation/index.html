@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Testing Workshop for Java</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-base: #0a0b10;
+            --bg-accent1: #161a2b;
+            --bg-accent2: #0f172a;
+            --ink: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.4);
+            --accent-2: #818cf8;
+            --card: rgba(20, 25, 40, 0.65);
+            --card-strong: rgba(30, 36, 56, 0.85);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --radius: 20px;
+            --mono: 'Fira Code', monospace;
+            --sans: 'Inter', sans-serif;
+            --head: 'Outfit', sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; min-height: 100%;
+            background-color: var(--bg-base);
+            color: var(--ink); font-family: var(--sans); overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Dynamic animated background orbs */
+        body::before, body::after {
+            content: ""; position: fixed; width: 50vw; height: 50vw; border-radius: 50%;
+            filter: blur(120px); opacity: 0.4; pointer-events: none; z-index: 0;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+        body::before { top: -20vw; left: -10vw; background: var(--accent); }
+        body::after { right: -10vw; bottom: -20vw; background: var(--accent-2); animation-delay: -10s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5vw, 5vw) scale(1.1); }
+        }
+
+        .deck { position: relative; z-index: 1; width: 100vw; height: 100vh; }
+        .slide {
+            position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto;
+            gap: 1.25rem; padding: 3rem 4rem 2rem; opacity: 0; pointer-events: none;
+            transform: translateY(30px) scale(0.98); transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slide.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .slide-shell { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr); gap: 1.5rem; align-items: stretch; min-height: 0; }
+        .slide-shell.single { grid-template-columns: 1fr; }
+        
+        /* Glassmorphism Cards */
+        .content-card, .side-card { 
+            background: var(--card); border: 1px solid var(--border); 
+            border-radius: var(--radius); box-shadow: var(--shadow); 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .content-card:hover, .side-card:hover { border-color: var(--border-hover); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.7); }
+        .content-card { padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+        .side-card { padding: 1.8rem; display: flex; flex-direction: column; justify-content: center; gap: 1.2rem; min-height: 0; }
+        
+        .eyebrow { display: inline-flex; align-items: center; gap: 0.6rem; align-self: flex-start; padding: 0.5rem 1rem; border-radius: 999px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; font-weight: 800; font-family: var(--head); box-shadow: 0 0 15px var(--accent-glow); }
+        h1, h2 { margin: 0 0 1.2rem; font-family: var(--head); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+        h1 { font-size: clamp(3rem, 5vw, 6rem); max-width: 15ch; background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: clamp(2.2rem, 4vw, 4rem); max-width: 20ch; background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h3 { margin: 0 0 0.75rem; font-size: 1.25rem; font-family: var(--head); color: #fff; }
+        p, li { font-size: clamp(1.05rem, 1.3vw, 1.3rem); line-height: 1.6; color: #cbd5e1; }
+        p.lead { font-size: clamp(1.2rem, 1.8vw, 1.6rem); color: var(--muted); max-width: 44rem; }
+        ul, ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.8rem; }
+        
+        /* Grid layouts */
+        .columns, .two-up, .three-up, .agenda { display: grid; gap: 1.5rem; }
+        .columns, .two-up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .three-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .agenda { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        
+        /* Interactive Cardlets */
+        .cardlet, .agenda-item, .contrast-card { 
+            padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); 
+            background: rgba(255, 255, 255, 0.03); transition: transform 0.3s ease, background 0.3s ease; 
+        }
+        .cardlet:hover, .agenda-item:hover, .contrast-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.05); }
+        
+        .contrast-card.good { border-left: 4px solid #10b981; background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%); }
+        .contrast-card.risk { border-left: 4px solid #ef4444; background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%); }
+        
+        .pill-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .pill { padding: 0.7rem 1.2rem; border-radius: 999px; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #c7d2fe; font-weight: 600; font-size: 0.9rem; }
+        
+        /* Live Code badges */
+        .accent-block { padding: 1.2rem 1.5rem; border-left: 4px solid var(--accent); background: linear-gradient(90deg, rgba(56,189,248,0.1) 0%, transparent 100%); border-radius: 12px; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        
+        /* Premium Code Blocks */
+        .code-block { padding: 1.2rem; border-radius: 12px; background: #0f111a; border: 1px solid #1e293b; color: #38bdf8; font-family: var(--mono); font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+        
+        .mini-title { margin: 0; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 800; font-family: var(--head); }
+        .side-card ul, .side-card ol { padding-left: 1rem; gap: 0.8rem; }
+        
+        /* Footer Controls */
+        .footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--muted); font-size: 0.95rem; font-family: var(--head); font-weight: 500; }
+        .progress { flex: 1; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.05); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .progress > span { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px var(--accent-glow); }
+        .meta { min-width: 7rem; text-align: right; }
+        
+        .controls { position: fixed; right: 2rem; bottom: 1.5rem; z-index: 3; display: flex; gap: 0.8rem; }
+        .controls button { width: 3.2rem; height: 3.2rem; border: 1px solid var(--border); border-radius: 50%; background: var(--card-strong); color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(10px); transition: transform 0.2s, background 0.2s; }
+        .controls button:hover { transform: scale(1.05); background: rgba(56, 189, 248, 0.1); border-color: var(--accent); }
+        
+        .help { position: fixed; left: 2rem; bottom: 1.8rem; z-index: 3; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 0.6rem 1.2rem; color: var(--muted); font-size: 0.85rem; backdrop-filter: blur(10px); font-family: var(--head); font-weight: 500; }
+        kbd { font-family: var(--mono); font-size: 0.8rem; padding: 0.2rem 0.5rem; border-radius: 6px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+        
+        @media (max-width: 980px) {
+            .slide { padding: 1.6rem 1.2rem 1rem; }
+            .slide-shell, .slide-shell.single, .columns, .two-up, .three-up, .agenda { grid-template-columns: 1fr; }
+            .content-card, .side-card { padding: 1.5rem; }
+            .help { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="deck" aria-live="polite">
+    <section class="slide" data-tone="impact" data-title="Opening">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Software Testing Workshop</div>
+                    <h1>Testing is not just about catching bugs. It is about building confidence.</h1>
+                    <p class="lead">A Deep Dive into Testing Strategy, Design, and Implementation.</p>
+                </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Outcomes">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Learning Outcomes</div>
+                    <h2>By the end, you should be able to</h2>
+                    <ul>
+                        <li>Determine and define the true unit under test.</li>
+                        <li>Write readable, isolated JUnit 5 tests using robust assertions.</li>
+                        <li>Apply the Arrange-Act-Assert (AAA) pattern consistently.</li>
+                        <li>Choose intentionally between stubs, fakes, mocks, and spies.</li>
+                        <li>Avoid over-mocking and recognize Mockito anti-patterns.</li>
+                        <li>Understand the mechanics of TDD, BDD, and Async testing stabilization.</li>
+                    </ul>
+                </div>
+            </article>
+            <aside class="side-card">
+                <div class="accent-block">The goal is not "learn syntax." The goal is "learn how to think about testing decisions."</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="warm" data-title="Agenda">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Session Agenda</div>
+                    <h2>Workshop Structure</h2>
+                    <div class="agenda">
+                        <div class="agenda-item"><strong>Block 1 - Foundations</strong><br>Why tests matter, characteristics of good tests, JUnit basics.</div>
+                        <div class="agenda-item"><strong>Block 2 - Test Design</strong><br>Readability, naming, test smells, state vs interaction.</div>
+                        <div class="agenda-item"><strong>Block 3 - Test Doubles</strong><br>Mock vs Fake, Mockito API, Mockito Anti-patterns.</div>
+                        <div class="agenda-item"><strong>Block 4 - Workflow & Strategy</strong><br>TDD, BDD, Async, Strategy, Refactoring.</div>
+                    </div><br>
+                    <div class="accent-block"><strong>Block 5 - Practice Block:</strong> Live coding and guided exercises in the repository.</div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="impact" data-title="Block 1">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Block 1</div>
+                    <h1>Testing Foundations</h1>
+                    <p class="lead">What unit testing is, why it matters, and the hallmarks of a healthy test suite.</p>
+                </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="What Is A Test">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Foundation</div>
+                    <h2>What is a unit test?</h2>
+                    <p class="lead">A unit test verifies one small piece of behavior in isolation and gives fast, trustworthy feedback.</p>
+                    <div class="three-up">
+                        <div class="cardlet">
+                            <h3>Small scope</h3>
+                            <p>Focuses on one unit of behavior, isolated from infrastructure like databases.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>Fast feedback</h3>
+                            <p>Runs in milliseconds to support a tight feedback loop during development.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>Deterministic</h3>
+                            <p>Passes or fails reliably for a real reason, never by luck.</p>
+                        </div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Riddle</p>
+                <ul>
+                    <li>What makes a test “small”? Is a unit a class or a behavior?</li>
+                </ul>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Unit vs Integration">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Definitions</div>
+                    <h2>Unit vs Integration vs E2E</h2>
+                    <div class="columns">
+                        <div class="contrast-card good">
+                            <h3>Unit Tests</h3>
+                            <ul><li>In-memory execution</li><li>Isolated from I/O</li><li>Immediate feedback</li><li>High volume</li></ul>
+                        </div>
+                        <div class="contrast-card risk">
+                            <h3>Integration Tests</h3>
+                            <ul><li>Talks to DB, Network, Disk</li><li>Slower execution</li><li>Validates component wiring</li></ul>
+                        </div>
+                    </div>
+                    <div class="accent-block mt-4">E2E tests string everything together. If a test hits a real database, it is not a unit test.</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Concept</p>
+                <div class="accent-block">Separating unit tests from integration tests keeps your primary feedback loop blindingly fast.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="warm" data-title="Why Testing Matters">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Why It Matters</div>
+                    <h2>Good tests do more than detect regressions</h2>
+                    <div class="agenda">
+                        <div class="agenda-item"><strong>Confidence</strong> Teams can change code and refactor with zero fear.</div>
+                        <div class="agenda-item"><strong>Documentation</strong> Tests describe expected behavior better than wikis.</div>
+                        <div class="agenda-item"><strong>Design feedback</strong> Hard-to-test code often signals high coupling.</div>
+                        <div class="agenda-item"><strong>Faster debugging</strong> Failures localize broken behavior instantly.</div>
+                    </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Qualities">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Test Quality</div>
+                    <h2>Characteristics of a Good Test</h2>
+                    <ul>
+                        <li><strong>Readability:</strong> A teammate can understand the setup and intent in 10 seconds.</li>
+                        <li><strong>Determinism:</strong> No hidden time, random numbers, or environment dependency.</li>
+                        <li><strong>Isolation:</strong> Test A does not depend on Test B passing or running first.</li>
+                        <li><strong>Signal-to-Noise:</strong> When it fails, the failure points precisely to the broken logic, not a side effect.</li>
+                    </ul>
+                </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Simple rule</p>
+                <div class="accent-block">If a failing test forces you to open the debugger just to understand what broke, the test is failing at its job.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Trust">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Mental Model</div>
+                    <h2>Trust is the currency of testing</h2>
+                    <p class="lead">A test suite is only valuable if the team trusts it implicitly.</p>
+                    <ul>
+                        <li>If tests are brittle, developers ignore failures.</li>
+                        <li>If tests are slow, developers skip running them.</li>
+                        <li>If tests are flaky, developers rerun them until they pass.</li>
+                    </ul>
+                    <div class="code-block">// A broken window in your suite
+                        @Test
+                        @Disabled("Fails on Mondays, Bob is looking into it")
+                        void calculate_discount() { ... }</div>
+            </article>
+
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="JUnit 5">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">JUnit 5 Basics</div>
+                    <h2>The core annotations</h2>
+                    <div class="three-up">
+                        <div class="cardlet">
+                            <h3>@Test</h3>
+                            <p>Marks a method as an executable test case.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>@BeforeEach</h3>
+                            <p>Runs before each test to create a fresh, entirely isolated fixture.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>@AfterEach</h3>
+                            <p>Runs after each test for resource cleanup (rare in pure unit tests).</p>
+                        </div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Why lifecycle matters</p>
+                <div class="accent-block">It prevents hidden coupling where Test 2 relies on data created by Test 1.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Assertions">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Assertions</div>
+                    <h2>Choose the most precise assertion for the intent</h2>
+                    <div class="columns">
+                        <div class="contrast-card risk">
+                            <h3>Weak Assertions</h3>
+                            <p>Good for basic booleans, but hide why something failed.</p>
+                            <div class="code-block">assertTrue(user.getAge() == 25);
+                                // Failure: "Expected true but was false"</div>
+                        </div>
+                        <div class="contrast-card good">
+                            <h3>Strong Assertions</h3>
+                            <p>Explicitly show expected vs actual states.</p>
+                            <div class="code-block">assertEquals(25, user.getAge());
+                                // Failure: "Expected 25 but was 24"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo01_BadAssertionsTest.java & Demo02_StrongAssertionsTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_strongAssertion() {
+                    PricingEngine engine = new PricingEngine();
+                    BigDecimal total = engine.calculateTotal(new BigDecimal(&quot;100&quot;), 1, false);
+
+                    // This tells us exactly the expected vs actual value
+                    assertEquals(new BigDecimal(&quot;105.00&quot;), total);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Note</p>
+                <p>AssertJ (e.g. <code>assertThat(x).isEqualTo(y)</code>) provides even stronger, more fluent error messages.</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Assertion Exercise">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">On-the-spot Prompt</div>
+                    <h2>Identify the weak assertion</h2>
+                    <div class="code-block">@Test
+                        void testOrderTotal() {
+                        Order order = new Order();
+                        order.addItem(new Item("Laptop", 1000));
+                        order.addItem(new Item("Mouse", 50));
+
+                        // Which is better?
+                        assertTrue(order.getTotal() == 1050);
+                        // OR
+                        assertEquals(1050, order.getTotal());
+                        }</div>
+                    <p>Why does it matter when the test fails?</p>
+                </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Takeaway</p>
+                <div class="accent-block">Maximize failure visibility. The assertion should tell you EXACTLY what went wrong without debugging.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="impact" data-title="Block 2">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Block 2</div>
+                    <h1>Designing Readable Tests</h1>
+                    <p class="lead">Structure, naming, smells, and building tests that survive refactoring.</p>
+                </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Test Naming">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Test Naming</div>
+                    <h2>Tests are executable documentation</h2>
+                    <p>A failing test name should tell you exactly what business requirement just broke.</p>
+                    <div class="columns">
+                        <div class="contrast-card risk">
+                            <h3>Bad: Focuses on method names</h3>
+                            <ul>
+                                <li><code>testCalculate()</code></li>
+                                <li><code>testNullProcess()</code></li>
+                                <li><code>orderTest()</code></li>
+                            </ul>
+                        </div>
+                        <div class="contrast-card good">
+                            <h3>Good: Focuses on behaviors and outcomes</h3>
+                            <ul>
+                                <li><code>calculate_appliesDiscount_whenUserIsPremium</code></li>
+                                <li><code>should_throwException_whenEmailIsBlank</code></li>
+                                <li><code>rejectsExpiredCoupons()</code></li>
+                            </ul>
+                        </div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Hint</p>
+                <p>If you append "when..." and "then...", you naturally describe behaviors instead of code.</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="deep" data-title="AAA Structure">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Structure</div>
+                    <h2>Arrange, Act, Assert</h2>
+                    <div class="three-up">
+                        <div class="contrast-card good">
+                            <h3>Arrange</h3>
+                            <p>Build the data and collaborators needed for the scenario.</p>
+                        </div>
+                        <div class="contrast-card good">
+                            <h3>Act</h3>
+                            <p>Execute one clear operation on the system under test.</p>
+                        </div>
+                        <div class="contrast-card good">
+                            <h3>Assert</h3>
+                            <p>Verify the outcome that proves the behavior.</p>
+                        </div>
+                    </div>
+                    <div class="code-block">// Arrange
+                        Order order = new Order();
+                        order.addItem(new Item("Book", 20));
+
+                        // Act
+                        order.applyDiscount(0.10);
+
+                        // Assert
+                        assertEquals(18.0, order.getTotal());</div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo03_MessyStructureTest.java & Demo04_CleanAaaTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_clearAaaStructure_Confirm() {
+                    // Arrange
+                    Customer c = new Customer(&quot;1&quot;, &quot;Bob&quot;, &quot;bob@example.com&quot;, false);
+                    Order o = new Order(&quot;O-1&quot;, c, List.of(new OrderItem(&quot;SKU&quot;, 1, new BigDecimal(&quot;10&quot;))));
+
+                    // Act
+                    o.updateStatus(OrderStatus.CONFIRMED);
+
+                    // Assert
+                    assertEquals(OrderStatus.CONFIRMED, o.getStatus());
+                    }</div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="AAA Matters">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Why AAA Helps</div>
+                    <h2>AAA reduces cognitive load</h2>
+                    <ul>
+                        <li>Readers know where setup ends and behavior begins.</li>
+                        <li>Debugging becomes easier because the flow is obvious.</li>
+                        <li>It exposes tests that are doing too much.</li>
+                    </ul>
+                    <div class="code-block">// Smell: Multiple Act/Assert blocks
+                        order.addItem(item);
+                        assertEquals(10, order.getTotal());  <-- Assert 1
+
+                        order.applyDiscount(0.1);
+                        assertEquals(9, order.getTotal());   <-- Act 2 & Assert 2</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Smell to mention</p>
+                <div class="accent-block">If a test has multiple “Act” steps, it may be testing too many things at once. Split it up.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Test Smells">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Test Smells</div>
+                    <h2>What makes a test rot over time?</h2>
+                    <ul>
+                        <li><strong>Brittle tests:</strong> Fails when private implementation details change, even if public behavior is the same.</li>
+                        <li><strong>Over-specified tests:</strong> Asserts on things that don't matter (e.g. checking exactly 12 fields when only 1 changed).</li>
+                        <li><strong>Hidden setup:</strong> 400 lines of base class setup make it impossible to see what the current test actually needs.</li>
+                        <li><strong>Duplication:</strong> Copy-pasting 50 lines of JSON setup into 20 tests.</li>
+                    </ul>
+                </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Discussion</p>
+                <p>What makes a test brittle? If I rename a private variable, should a test break?</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="True Unit">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Design Depth</div>
+                    <h2>Identifying the True Unit Under Test</h2>
+                    <p>A "unit" is not always a single class. It is a single <strong>behavior</strong>.</p>
+                    <div class="columns">
+                        <div class="contrast-card risk">
+                            <h3>Class = Unit</h3>
+                            <p>Mocking every other class in the system just to test Class A. Leads to brittle, implementation-locked tests.</p>
+                        </div>
+                        <div class="contrast-card good">
+                            <h3>Behavior = Unit</h3>
+                            <p>Testing Class A and its pure domain helper Class B together, as long as they don't hit I/O.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo14_TrueUnitTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">
+                    // DEMO: A &quot;Unit&quot; is a BEHAVIOR, not a CLASS.
+                    // Here we are testing Order totaling. Order heavily relies on OrderItem and PricingEngine.
+                    // Notice we do NOT mock OrderItem. We do NOT mock PricingEngine (if it were injected).
+                    // We instantiate real objects because they are pure domain logic without side-effects (I/O).
+                    // If we mocked OrderItem, the test would be incredibly brittle and unreadable.
+
+                    @Test
+                    void shouldCalculateTotalUsingRealSubUnits() {
+                    // Arrange
+                    Customer c = new Customer(&quot;1&quot;, &quot;Alice&quot;, &quot;alice@test.com&quot;, true);
+                    OrderItem item1 = new OrderItem(&quot;LAPTOP&quot;, 1, new BigDecimal(&quot;1000.00&quot;));
+                    OrderItem item2 = new OrderItem(&quot;MOUSE&quot;, 2, new BigDecimal(&quot;50.00&quot;));
+
+                    Order order = new Order(&quot;O-123&quot;, c, List.of(item1, item2));
+
+                    // Act
+                    BigDecimal total = order.totalAmount();
+
+                    // Assert
+                    // We know exactly what the domain objects yield.
+                    assertEquals(new BigDecimal(&quot;1100.00&quot;), total);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Insight</p>
+                <div class="accent-block">Over-isolating classes makes refactoring impossible because tests enforce class boundaries instead of behaviors.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Setup Patterns">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Test Data Setup</div>
+                    <h2>Fixture Discipline: Builders and Factories</h2>
+                    <p>Don't clutter tests with irrelevant fields. Use Test Data Builders.</p>
+                    <div class="code-block">// Bad: Irrelevant details pollute the test
+                        User user = new User("John", "Doe", "j@j.com", "123 Main", "NY", "10001", true);
+
+                        // Good: Highlight only what matters for THIS test
+                        User user = TestUserBuilder.aUser()
+                        .withAdminPrivileges(true)
+                        .build();</div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo15_TestBuilderTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">
+                    // DEMO: Fixture discipline.
+                    // Instead of copying 10 lines of setup into every single test...
+
+                    @Test
+                    void testWithBuilder() {
+                    // Arrange
+                    Order order = TestOrderBuilder.aValidOrder()
+                    .withCustomer(new Customer(&quot;1&quot;, &quot;Bob&quot;, &quot;b@b.com&quot;, true))
+                    .withItem(&quot;CPU&quot;, 1, new BigDecimal(&quot;500&quot;))
+                    .build();
+
+                    // Act &amp; Assert
+                    assertEquals(new BigDecimal(&quot;500&quot;), order.totalAmount());
+                    }
+
+                    // Usually builders live in a dedicated class, but we inline it here for the demo.
+                    public static class TestOrderBuilder {
+                    private Customer customer = new Customer(&quot;Default&quot;, &quot;Def&quot;, &quot;def@test.com&quot;, false);
+                    private List&lt;OrderItem&gt; items = List.of(new OrderItem(&quot;DEFAULT&quot;, 1, BigDecimal.TEN));
+
+                    public static TestOrderBuilder aValidOrder() {
+                    return new TestOrderBuilder();
+                    }
+
+                    public TestOrderBuilder withCustomer(Customer c) {
+                    this.customer = c;
+                    return this;
+                    }
+
+                    public TestOrderBuilder withItem(String sku, int q, BigDecimal price) {
+                    this.items = List.of(new OrderItem(sku, q, price));
+                    return this;
+                    }
+
+                    public Order build() {
+                    return new Order(&quot;O-TEST&quot;, customer, items);
+                    }
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Pattern</p>
+                <p>The Object Mother or Builder pattern keeps tests scoped purely to the Arrange data that impacts the Act phase.</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="State vs Interaction">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Verification</div>
+                    <h2>State vs Interaction Testing</h2>
+                    <div class="columns">
+                        <div class="contrast-card good">
+                            <h3>State Verification</h3>
+                            <p>Checking the final value of an object. Highly robust. Preferred.</p>
+                            <code>assertEquals(CONFIRMED, order.getStatus());</code>
+                        </div>
+                        <div class="contrast-card risk">
+                            <h3>Interaction Verification</h3>
+                            <p>Checking that a method was called. Can be brittle.</p>
+                            <code>verify(emailService).send(orderId);</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo08_StateWithFakeTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_fakeStateVerification() {
+                    InMemoryInventoryService fake = new InMemoryInventoryService();
+
+                    fake.reserve(&quot;BOOK&quot;, 1);
+
+                    // Verify STATE, not interactions. Highly robust to refactoring.
+                    assertTrue(fake.isAvailable(&quot;BOOK&quot;, 0)); // No more books left
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Rule of thumb</p>
+                <div class="accent-block">Always prefer state verification over interaction verification when both are possible.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Edge Cases">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Edge Cases</div>
+                    <h2>Negative-path & Boundary Thinking</h2>
+                    <p>Tests aren't just for the Happy Path. Attack your own logic.</p>
+                    <ul>
+                        <li><strong>Null/Empty:</strong> What if the list is empty? Strings are blank?</li>
+                        <li><strong>Boundaries:</strong> What happens at age 17? age 18? age 19?</li>
+                        <li><strong>Errors:</strong> Does the system throw an exception, or fail silently by returning null?</li>
+                    </ul>
+                    <div class="code-block">@Test
+                        void should_throwException_whenAgeIsBelow18() {
+                        assertThrows(IllegalArgumentException.class, () -> {
+                        service.registerAccount(17);
+                        });
+                        }</div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo16_BoundaryTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">// DEMO: Negative Path &amp; Boundaries
+                    // The spec says: &quot;Premium members get $10 off if subtotal is strictly &gt; $100.&quot;
+                    // We must test exactly $100.00 and exactly $100.01.
+
+                    @Test
+                    void shouldNotApplyDiscountRightOnTheBoundary() {
+                    PricingEngine engine = new PricingEngine();
+
+                    // Exact boundary: 100.00
+                    BigDecimal total = engine.calculateTotal(new BigDecimal(&quot;100.00&quot;), 1, true);
+
+                    // No discount applied because it is not STRICTLY greater than 100
+                    assertEquals(new BigDecimal(&quot;100.00&quot;), total);
+                    }
+
+                    @Test
+                    void shouldApplyDiscountJustAboveTheBoundary() {
+                    PricingEngine engine = new PricingEngine();
+
+                    // Just over boundary: 100.01
+                    BigDecimal total = engine.calculateTotal(new BigDecimal(&quot;100.01&quot;), 1, true);
+
+                    // Discount of 10.00 applied
+                    assertEquals(new BigDecimal(&quot;90.01&quot;), total);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Quick Exercise</p>
+                <p>If a discount applies for purchases over $100, what 3 values should you test?</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="impact" data-title="Block 3">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Block 3</div>
+                    <h1>Test Doubles and Mockito</h1>
+                    <p class="lead">Stubs, fakes, mocks, and how not to shoot yourself in the foot with Mockito.</p>
+                </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Test Doubles Taxonomy">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Taxonomy</div>
+                    <h2>Test doubles help isolate behavior</h2>
+                    <p>A test double is a stand-in for a real collaborator. Do not call everything a mock.</p>
+                    <div class="columns">
+                        <div class="cardlet">
+                            <h3>Stub</h3>
+                            <p>Returns hardcoded, pre-defined values.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>Fake</h3>
+                            <p>Small working implementation (e.g. an InMemoryRepository).</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>Mock</h3>
+                            <p>Used specifically to verify interactions (e.g. 'was sendEmail() called?').</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>Spy</h3>
+                            <p>Wraps a real object, delegates calls, but observes them.</p>
+                        </div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <div class="accent-block">The distinction matters because each double solves a vastly different design problem.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="warm" data-title="Mock vs Fake">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Deep Dive</div>
+                    <h2>Fake vs Mock tradeoff</h2>
+                    <div class="two-up">
+                        <div class="contrast-card good">
+                            <h3>Fake (InMemory Implementation)</h3>
+                            <ul>
+                                <li>Tracks state internally</li>
+                                <li>Great for data repositories</li>
+                                <li>Write once, use everywhere</li>
+                                <li>Refactoring-proof</li>
+                            </ul>
+                        </div>
+                        <div class="contrast-card risk">
+                            <h3>Mock (Mockito)</h3>
+                            <ul>
+                                <li>Checks how a method was called</li>
+                                <li>Best at service boundaries (emails/events)</li>
+                                <li>Unique setup in every test</li>
+                                <li>Often brittle to refactoring</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo08_StateWithFakeTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_fakeStateVerification() {
+                    InMemoryInventoryService fake = new InMemoryInventoryService();
+
+                    fake.reserve(&quot;BOOK&quot;, 1);
+
+                    // Verify STATE, not interactions. Highly robust to refactoring.
+                    assertTrue(fake.isAvailable(&quot;BOOK&quot;, 0)); // No more books left
+                    }</div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Mockito Core API">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Mockito</div>
+                    <h2>Three core operations</h2>
+                    <div class="three-up">
+                        <div class="cardlet">
+                            <h3>mock()</h3>
+                            <p>Create the dummy collaborator.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>when().thenReturn()</h3>
+                            <p>Stub the response needed for this scenario.</p>
+                        </div>
+                        <div class="cardlet">
+                            <h3>verify()</h3>
+                            <p>Confirm the important interaction happened.</p>
+                        </div>
+                    </div>
+                    <div class="code-block">// Arrange
+                        when(inventory.isAvailable("item", 2)).thenReturn(true);
+
+                        // Act
+                        boolean success = payment.processPayment(request);
+
+                        // Assert
+                        verify(payment).processPayment(request);</div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo06_MockitoInteractionTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_verifySystemBoundary() {
+                    EmailClient mockClient = mock(EmailClient.class);
+
+                    // Act
+                    mockClient.send(&quot;test@example.com&quot;, &quot;Hello&quot;);
+
+                    // Assert: We care about the interaction occurring, not the return value
+                    verify(mockClient).send(&quot;test@example.com&quot;, &quot;Hello&quot;);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <ul>
+                    <li>Mock collaborators, not value objects.</li>
+                    <li>Verify important calls, not every call.</li>
+                </ul>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="When Not To Mock">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Mockito Anti-Patterns</div>
+                    <h2>When mocking hurts</h2>
+                    <ul>
+                        <li><strong>Mocking Value Objects:</strong> Never mock <code>User</code> or <code>List</code>. Just instantiate them.</li>
+                        <li><strong>Over-verification:</strong> <code>verify(log).info("started")</code> makes tests extremely brittle.</li>
+                        <li><strong>Mocking everything:</strong> If a test has 6 mocks and 2 lines of Act code, you are testing Mockito, not your domain.</li>
+                        <li><strong>Return a mock from a mock:</strong> <code>when(a.getB()).thenReturn(mockB)</code> is a sign of severe Law of Demeter violations.</li>
+                    </ul>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo07_MockitoAntiPatternTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_mockingValueObjectsIsBrittle() {
+                    Customer mockCustomer = mock(Customer.class);
+                    when(mockCustomer.getName()).thenReturn(&quot;Bob&quot;);
+                    when(mockCustomer.getEmail()).thenReturn(&quot;bob@example.com&quot;);
+                    when(mockCustomer.isPremiumMember()).thenReturn(true);
+
+                    // The above is painful. Always do this instead:
+                    // Customer realCustomer = new Customer(&quot;1&quot;, &quot;Bob&quot;, &quot;bob@example.com&quot;, true);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Anti-pattern</p>
+                <div class="accent-block">Over-mocking makes tests describe the IMPLEMENTATION instead of the BEHAVIOR.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Mocking Exercise">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Live Decision prompt</div>
+                    <h2>Choose the right double</h2>
+                    <p>Scenario: You are testing a <code>UserService</code> that creates a user. It needs to save the user to a database, and send a welcome email.</p>
+                    <ul>
+                        <li>What double should you use for the <code>UserRepository</code>?</li>
+                        <li>What double should you use for the <code>EmailGateway</code>?</li>
+                    </ul>
+                </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Answers</p>
+                <ul>
+                    <li>Repo: Fake (InMemory list) to check state.</li>
+                    <li>Email: Mock to verify the system boundary crossed.</li>
+                </ul>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="impact" data-title="Block 4">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Block 4</div>
+                    <h1>Workflow, Async, and Strategy</h1>
+                    <p class="lead">Test Driven Development, Behavior Driven Development, taming flaky Async tests, and overall strategy.</p>
+                </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="TDD">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Test Driven Development</div>
+                    <h2>Write the test first, then earn the implementation</h2>
+                    <div class="agenda">
+                        <div class="agenda-item"><strong>Red</strong> Start with a failing test. It must compile but fail.</div>
+                        <div class="agenda-item"><strong>Green</strong> Implement the absolute minimal change to make it pass.</div>
+                        <div class="agenda-item"><strong>Refactor</strong> Clean the code's design while the green test protects you.</div>
+                        <div class="agenda-item"><strong>Repeat</strong> Grow behavior in tiny, incremental steps.</div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Critical point</p>
+                <div class="accent-block">TDD is not "write tests after coding." The failing test comes first to guide the design.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="TDD Benefits">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Why TDD Helps</div>
+                    <h2>What TDD gives you</h2>
+                    <ul>
+                        <li>Focus on the API from the consumer's perspective before building internals.</li>
+                        <li>Prevents speculative, over-engineered code ("YAGNI").</li>
+                        <li>Results in 100% natural coverage built-in.</li>
+                        <li>Creates natural pressure toward testable, loosely coupled design.</li>
+                    </ul>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo09 -> Demo10 -> Demo11</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">// Code not found.</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Common mistake</p>
+                <div class="accent-block">Writing five failing tests and then coding everything at once is usually too big a step.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="BDD">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Behavior Driven Development</div>
+                    <h2>BDD makes tests read like specifications</h2>
+                    <ul>
+                        <li>Focuses on shared understanding between business and developers.</li>
+                        <li>Changes AAA to Given / When / Then.</li>
+                        <li>Uses domain language, omitting technical jargon when possible.</li>
+                    </ul>
+                    <div class="code-block">@Test
+                        void givenAvailableStock_whenOrderPlaced_thenInventoryDeducted() {
+                        // Given
+                        inventory.add("Laptop", 10);
+                        // When
+                        orderService.purchase("Laptop", 1);
+                        // Then
+                        assertEquals(9, inventory.getStock("Laptop"));
+                        }</div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo17_BddStyleTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">// DEMO: BDD Style Mockito
+                    // Regular Mockito uses `when(...).thenReturn(...)` and `verify(...)`.
+                    // This breaks the Given/When/Then naming rhythm because &#x27;when&#x27; acts as &#x27;given&#x27;.
+                    // BDDMockito fixes this vocabulary clash.
+
+                    @Test
+                    void givenClient_whenSending_thenMessageDelivered() {
+                    // Given (Setup)
+                    EmailClient mockClient = mock(EmailClient.class);
+                    // Note the use of `given` instead of `when`
+                    // given(mockClient.isConnected()).willReturn(true);
+
+                    // When (Action)
+                    mockClient.send(&quot;test@example.com&quot;, &quot;Alert&quot;);
+
+                    // Then (Assertion)
+                    // Note the use of `then` instead of `verify`
+                    then(mockClient).should().send(&quot;test@example.com&quot;, &quot;Alert&quot;);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <div class="accent-block">BDD is mostly about communication and naming discipline, not about external tooling.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Async Testing">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Async Testing</div>
+                    <h2>Async tests fail when time is guessed</h2>
+                    <div class="two-up">
+                        <div class="contrast-card risk">
+                            <h3>Flaky style</h3>
+                            <ul>
+                                <li>Uses <code>Thread.sleep(1000)</code></li>
+                                <li>Assumes timing will always be fast enough</li>
+                                <li>Passes locally, fails on slow CI servers</li>
+                            </ul>
+                        </div>
+                        <div class="contrast-card good">
+                            <h3>Deterministic style</h3>
+                            <ul>
+                                <li>Uses <code>CountDownLatch</code>, <code>CompletableFuture</code>, or Awaitility</li>
+                                <li>Waits explicitly for a signal</li>
+                                <li>Fails fast using timeouts</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo12_FlakyAsyncTest.java & Demo13_StableAsyncTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">@Test
+                    void demo_stableWithLatch() throws InterruptedException {
+                    FlakyDataFetcher fetcher = new FlakyDataFetcher();
+                    CountDownLatch latch = new CountDownLatch(1);
+
+                    fetcher.fetchDataAsync(latch::countDown);
+
+                    // Implicitly waits UP TO 1 second, but fails precisely if exceeded.
+                    boolean completed = latch.await(1, TimeUnit.SECONDS);
+                    assertTrue(completed);
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Strong takeaway</p>
+                <div class="accent-block">A flaky test trains teams to ignore failures. Never tolerate <code>Thread.sleep</code> in a test suite.</div>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Diagnose Flaky">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Prompt</div>
+                    <h2>Diagnose the Flaky Test</h2>
+                    <div class="code-block">@Test
+                        void sendsAsyncNotification() throws InterruptedException {
+                        notificationService.triggerAsyncAlert("System Down!");
+
+                        // Test fails 1 out of 10 times on CI server
+                        Thread.sleep(500);
+
+                        verify(emailClient).send("System Down!");
+                        }</div>
+                    <p>How would we stabilize this?</p>
+                </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Solution</p>
+                <p>Pass down a synchronous ExecutorService in tests, or use Awaitility: <code>await().untilAsserted(() -> verify(...))</code>.</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="deep" data-title="Test Pyramid">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Strategy</div>
+                    <h2>The test pyramid is about balance</h2>
+                    <div class="agenda">
+                        <div class="agenda-item"><strong>Unit tests</strong> Many, fast, focused, cheap to maintain.</div>
+                        <div class="agenda-item"><strong>Integration tests</strong> Fewer, boundary-focused, moderately fast.</div>
+                        <div class="agenda-item"><strong>End-to-end tests</strong> Fewest, expensive, brittle, high-value user journeys.</div>
+                    </div>
+                    <br>
+                    <div class="accent-block">Healthy testing is not "100% mocked unit tests everywhere." It is the right mix of tests providing maximum diagnostic power.</div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Refactoring">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Refactoring Strategy</div>
+                    <h2>Characterization Tests</h2>
+                    <p>How do you test legacy, highly-coupled code without tests?</p>
+                    <ol>
+                        <li><strong>Characterize:</strong> Write coarse tests asserting current behavior (even if messy).</li>
+                        <li><strong>Introduce Seams:</strong> Extract interfaces or use dependency injection.</li>
+                        <li><strong>Isolate:</strong> Inject fakes/mocks into the seams.</li>
+                        <li><strong>Refactor safely:</strong> Rewrite internals with the net in place.</li>
+                    </ol>
+                </div>
+
+                <div class="accent-block" style="background: rgba(15, 108, 120, 0.15); border-left-color: var(--accent-2); border-radius: 12px; margin-top: 1rem; padding: 0.8rem 1rem;"><strong>👨‍💻 Live Code:</strong> <code>Demo18_CharacterizationTest.java</code></div>
+
+                <div class="code-block" style="margin-top: 1rem; max-height: 250px; overflow-y: auto; font-size: 0.8rem;">// DEMO: Characterization Tests
+                    // A characterization test documents what the code CURRENTLY does,
+                    // even if it&#x27;s messy or ugly. It&#x27;s a safety net for refactoring.
+
+                    @Test
+                    void characterization_shouldThrowBecauseOfHiddenStaticDatabase() {
+                    // We know LegacyCheckoutManager explodes because of GlobalDatabaseConfig
+                    // Instead of fixing it first, we WRITE A TEST proving it explodes.
+
+                    java.lang.NoClassDefFoundError error = null;
+                    try {
+                    // new LegacyCheckoutManager().checkout(...);
+                    // This would normally throw. We pin the failure exact type.
+                    } catch (java.lang.NoClassDefFoundError e) {
+                    error = e;
+                    }
+
+                    // By pinning this behavior, when we extract the database config into an injected interface,
+                    // this test failing tells us we successfully broke the hidden dependency.
+                    }</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Insight</p>
+                <p>A characterization test says "I don't care what this should do, I care what it DOES right now."</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="impact" data-title="Block 5">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Block 5</div>
+                    <h1>Practice Block</h1>
+                    <p class="lead">Coding assignments applying the concepts in the repository.</p>
+                </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Exercise Transition">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">From Slides To Code</div>
+                    <h2>We will now move into the repository</h2>
+                    <p>Open the project in IntelliJ or your preferred IDE.</p>
+                    <p>Work individually or pair program to solve the exercises. We will pause between modules to debrief.</p>
+                    <div class="code-block">1. src/test/java/com/software/testingjava/module01_basics/
+                        2. src/test/java/com/software/testingjava/module02_design/
+                        3. src/test/java/com/software/testingjava/module03_test_doubles/
+                        4. src/test/java/com/software/testingjava/module04_mockito/
+                        5. src/test/java/com/software/testingjava/module05_tdd/
+                        6. src/test/java/com/software/testingjava/module06_async/
+                        7. src/test/java/com/software/testingjava/module07_refactoring/</div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Process</p>
+                <p>Run tests continuously in the terminal or IDE.</p>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Exercise 1-2">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Exercise</div>
+                    <h2>Exercises 1 & 2: Assertions and Design</h2>
+                    <div class="agenda">
+                        <div class="agenda-item"><strong>Ex 1: Assertion Cleanup</strong><br>Open Module 1. Find weak assertions and replace them with strong, descriptive JUnit 5 assertions. Watch them fail to see the better error messages.</div>
+                        <div class="agenda-item"><strong>Ex 2: Fixture and Naming</strong><br>Open Module 2. Refactor repeated setup code into `@BeforeEach`. Rename the tests to clearly describe behavior.</div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Debrief focus</p>
+                <ul><li>How much easier is it to read the AAA structure now?</li></ul>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide"  data-title="Exercise 3-4">
+        <div class="slide-shell">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Exercise</div>
+                    <h2>Exercises 3 & 4: Doubles and Mockito</h2>
+                    <div class="agenda">
+                        <div class="agenda-item"><strong>Ex 3: Stub / Fake selection</strong><br>Open Module 3. Implement an InMemory repository manually to see how a Fake operates without Mockito.</div>
+                        <div class="agenda-item"><strong>Ex 4: Mockito Orchestration</strong><br>Open Module 4. Use Mockito to mock a Notification service. Correctly sequence `when()` and `verify()`. Avoid verifying things that don't matter.</div>
+                    </div>
+            </article>
+            <aside class="side-card">
+                <p class="mini-title">Debrief focus</p>
+                <ul><li>Which was easier to reason about? The Fake or the Mock?</li></ul>
+            </aside>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="warm" data-title="Exercise 5-7">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Exercise</div>
+                    <h2>Exercises 5, 6, & 7: TDD, Async, Refactor</h2>
+                    <div class="three-up">
+                        <div class="cardlet"><strong>Ex 5: TDD</strong><br>Fix a failing test by writing minimum passing code.</div>
+                        <div class="cardlet"><strong>Ex 6: Async</strong><br>Identify a Thread.sleep() flaky test and leverage an Executor timeout to fix it.</div>
+                        <div class="cardlet"><strong>Ex 7: Refactor</strong><br>Add characterization tests to untestable legacy code, then inject dependencies.</div>
+                    </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+    <section class="slide" data-tone="impact" data-title="Closing">
+        <div class="slide-shell single">
+            <article class="content-card">
+                <div>
+                    <div class="eyebrow">Closing</div>
+                    <h1>Thank You.</h1>
+                    <p class="lead">Testing is discipline. Write tests that you trust, that read clearly, and that unlock rapid refactoring.</p>
+                    <div class="pill-row">
+                        <span class="pill">Keep tests focused</span>
+                        <span class="pill">Test behaviors, not classes</span>
+                        <span class="pill">Use fakes for state, mocks for boundaries</span>
+                    </div>
+            </article>
+        </div>
+        <div class="footer"><div class="progress"><span></span></div><div class="meta"></div></div>
+    </section>
+
+
+</div>
+<div class="help">Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd>, <kbd>Space</kbd>, or click the arrows</div>
+<div class="controls" aria-label="Presentation controls">
+    <button type="button" id="prevBtn" aria-label="Previous slide">&#8592;</button>
+    <button type="button" id="nextBtn" aria-label="Next slide">&#8594;</button>
+</div>
+<script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let current = 0;
+    function renderSlide(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, slideIndex) => {
+            const active = slideIndex === current;
+            slide.classList.toggle('active', active);
+            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+            const progressBar = slide.querySelector('.progress > span');
+            const meta = slide.querySelector('.meta');
+            const pct = ((slideIndex + 1) / slides.length) * 100;
+            progressBar.style.width = `${pct}%`;
+            meta.textContent = `${slideIndex + 1} / ${slides.length}`;
+        });
+        const activeTitle = slides[current].dataset.title || `Slide ${current + 1}`;
+        document.title = `${activeTitle} | Software Testing`;
+        window.location.hash = `slide-${current + 1}`;
+    }
+    function nextSlide() { renderSlide(current + 1); }
+    function prevSlide() { renderSlide(current - 1); }
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+    document.addEventListener('keydown', (event) => {
+        if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(event.key)) { event.preventDefault(); nextSlide(); }
+        if (['ArrowLeft', 'PageUp', 'Backspace'].includes(event.key)) { event.preventDefault(); prevSlide(); }
+        if (event.key.toLowerCase() === 'f') {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+            else document.exitFullscreen().catch(() => {});
+        }
+        if (event.key === 'Home') { event.preventDefault(); renderSlide(0); }
+        if (event.key === 'End') { event.preventDefault(); renderSlide(slides.length - 1); }
+    });
+    const initialHash = window.location.hash.match(/slide-(\d+)/);
+    const initialIndex = initialHash ? Number(initialHash[1]) - 1 : 0;
+    renderSlide(initialIndex);
+</script>
+</body>
+</html>
