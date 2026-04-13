@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module02_junit.Demo05_HiddenSetupTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:54.145Z" hostname="OLX-M2WQD1906X" time="0.002">
+  <properties/>
+  <testcase name="testTimeoutConfig()" classname="com.software.testingjava.module02_junit.Demo05_HiddenSetupTest" time="0.002"/>
+  <system-out><![CDATA[Timeout is 5000
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

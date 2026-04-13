@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module02_junit.OrderServiceLifecycleTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:54.148Z" hostname="OLX-M2WQD1906X" time="0.001">
+  <properties/>
+  <testcase name="shouldConfirmOrderUsingReusableFixture()" classname="com.software.testingjava.module02_junit.OrderServiceLifecycleTest" time="0.001"/>
+  <testcase name="shouldReserveStockDuringOrderPlacement()" classname="com.software.testingjava.module02_junit.OrderServiceLifecycleTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

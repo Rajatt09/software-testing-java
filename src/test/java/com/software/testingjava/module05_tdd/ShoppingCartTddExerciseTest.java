@@ -11,7 +11,7 @@ class ShoppingCartTddExerciseTest {
     // EXERCISE: Remove @Disabled, let the test fail, then write minimal code in ShoppingCart.java to make it pass.
 
     @Test
-    @Disabled("Remove this to start the exercise")
+//    @Disabled("Remove this to start the exercise")
     void shouldAddNewItemToCart() {
         ShoppingCart cart = new ShoppingCart();
         cart.addItem("BOOK-1", 1);
@@ -21,7 +21,7 @@ class ShoppingCartTddExerciseTest {
     }
     
     @Test
-    @Disabled("Remove this to start the exercise")
+//    @Disabled("Remove this to start the exercise")
     void shouldCombineQuantitiesForSameItem() {
         ShoppingCart cart = new ShoppingCart();
         cart.addItem("BOOK-1", 1);

@@ -5,6 +5,15 @@ import java.math.BigDecimal;
 
 public class DiscountCalculator {
     public BigDecimal calculateDiscountedTotal(Order order) {
-        throw new UnsupportedOperationException("Implement as part of Module 05 TDD");
+        BigDecimal total = order.totalAmount();
+
+        if (order.getCustomer().isPremiumMember()) {
+            BigDecimal discount = total.multiply(new BigDecimal("0.10"));
+            return total.subtract(discount).setScale(2);
+        }
+
+        return total;
+
+//        throw new UnsupportedOperationException("Implement as part of Module 05 TDD");
     }
 }

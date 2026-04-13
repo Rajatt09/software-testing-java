@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module07_async.Demo13_StableAsyncTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:54.795Z" hostname="OLX-M2WQD1906X" time="0.177">
+  <properties/>
+  <testcase name="demo_stableWithLatch()" classname="com.software.testingjava.module07_async.Demo13_StableAsyncTest" time="0.176"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module08_refactoring.LegacyCheckoutManagerCharacterizationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:55.083Z" hostname="OLX-M2WQD1906X" time="0.01">
+  <properties/>
+  <testcase name="shouldReturnSuccessForHappyPathCheckout()" classname="com.software.testingjava.module08_refactoring.LegacyCheckoutManagerCharacterizationTest" time="0.008"/>
+  <testcase name="shouldReturnOutOfStockWhenLegacyInventoryRejectsItem()" classname="com.software.testingjava.module08_refactoring.LegacyCheckoutManagerCharacterizationTest" time="0.0"/>
+  <system-out><![CDATA[AUDIT: START:C-LEGACY
+LEGACY EMAIL: Order created for legacy@example.com
+AUDIT: SUCCESS:BOOK-1:20.0
+AUDIT: START:C-LEGACY
+AUDIT: OUT_OF_STOCK
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

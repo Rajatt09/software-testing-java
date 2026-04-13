@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class AsyncOrderNotifierTest {
 
     @Test
-    @Disabled("Demonstrates a flaky test that depends on timing guesses.")
+//    @Disabled("Demonstrates a flaky test that depends on timing guesses.")
     void shouldDemonstrateFlakyTimingBasedAsyncTest() throws Exception {
         // Arrange
         RecordingNotificationService notificationService = new RecordingNotificationService();

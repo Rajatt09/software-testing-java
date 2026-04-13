@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module05_tdd.Demo09_TddStep1_RedTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:54.511Z" hostname="OLX-M2WQD1906X" time="0.0">
+  <properties/>
+  <testcase name="shouldReturnFizzOnThree()" classname="com.software.testingjava.module05_tdd.Demo09_TddStep1_RedTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

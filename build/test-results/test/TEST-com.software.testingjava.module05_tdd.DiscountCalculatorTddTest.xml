@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module05_tdd.DiscountCalculatorTddTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:54.513Z" hostname="OLX-M2WQD1906X" time="0.001">
+  <properties/>
+  <testcase name="shouldLeaveStandardOrdersUnchanged()" classname="com.software.testingjava.module05_tdd.DiscountCalculatorTddTest" time="0.001"/>
+  <testcase name="shouldApplyTenPercentDiscountForPremiumCustomers()" classname="com.software.testingjava.module05_tdd.DiscountCalculatorTddTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

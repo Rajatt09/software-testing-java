@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.software.testingjava.module04_mockito.Demo06_MockitoInteractionTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-04-13T08:10:54.152Z" hostname="OLX-M2WQD1906X" time="0.302">
+  <properties/>
+  <testcase name="demo_verifySystemBoundary()" classname="com.software.testingjava.module04_mockito.Demo06_MockitoInteractionTest" time="0.302"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
