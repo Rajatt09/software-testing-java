@@ -25,7 +25,6 @@ class WeakAssertionsExerciseTest {
         // Change this to assertEquals(...)
 //        assertTrue(total.compareTo(new BigDecimal("140")) == 0);
 
-        // Assert
         assertEquals(new BigDecimal("140.00"),total);
     }
 
